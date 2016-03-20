@@ -1,3 +1,6 @@
+// Adds event as second param to selectValue(), setValue(), and by extension, onChange()
+// onChange() can return false to not hide the menu
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Input from 'react-input-autosize';
@@ -428,7 +431,7 @@ const Select = React.createClass({
 		}
 	},
 
-	setValue (value) {
+	setValue (value, event) {
 		if (this.props.autoBlur){
 			this.blurInput();
 		}
@@ -440,10 +443,11 @@ const Select = React.createClass({
 		if (this.props.simpleValue && value) {
 			value = this.props.multi ? value.map(i => i[this.props.valueKey]).join(this.props.delimiter) : value[this.props.valueKey];
 		}
-		this.props.onChange(value);
+
+		return this.props.onChange(value, event);
 	},
 
-	selectValue (value) {
+	selectValue (value, event) {
 		this.hasScrolledToOption = false;
 		if (this.props.multi) {
 			this.addValue(value);
@@ -451,12 +455,13 @@ const Select = React.createClass({
 				inputValue: '',
 			});
 		} else {
-			this.setValue(value);
-			this.setState({
-				isOpen: false,
-				inputValue: '',
-				isPseudoFocused: this.state.isFocused,
-			});
+			if (this.setValue(value, event)) {
+				this.setState({
+					isOpen: false,
+					inputValue: '',
+					isPseudoFocused: this.state.isFocused,
+				});
+			}
 		}
 	},
 

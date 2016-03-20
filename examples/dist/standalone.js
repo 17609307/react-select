@@ -280,6 +280,9 @@ module.exports = Option;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],3:[function(require,module,exports){
 (function (global){
+// Adds event as second param to selectValue(), setValue(), and by extension, onChange()
+// onChange() can return false to not hide the menu
+
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -338,6 +341,7 @@ var Select = _react2['default'].createClass({
 
 	propTypes: {
 		addLabelText: _react2['default'].PropTypes.string, // placeholder displayed when you want to add a label on a multi-value input
+		autosize: _react2['default'].PropTypes.bool, // whether to enable autosizing or not
 		allowCreate: _react2['default'].PropTypes.bool, // whether to allow creation of new entries
 		autoBlur: _react2['default'].PropTypes.bool,
 		autofocus: _react2['default'].PropTypes.bool, // autofocus the component on mount
@@ -355,6 +359,7 @@ var Select = _react2['default'].createClass({
 		ignoreCase: _react2['default'].PropTypes.bool, // whether to perform case-insensitive filtering
 		inputProps: _react2['default'].PropTypes.object, // custom attributes for the Input
 		isLoading: _react2['default'].PropTypes.bool, // whether the Select is loading externally or not (such as options being loaded)
+		joinValues: _react2['default'].PropTypes.bool, // joins multiple values into a single form field with the delimiter (legacy mode)
 		labelKey: _react2['default'].PropTypes.string, // path of the label value in option objects
 		matchPos: _react2['default'].PropTypes.string, // (any|start) match the start or entire string when filtering
 		matchProp: _react2['default'].PropTypes.string, // (any|label|value) which option property to filter on
@@ -396,6 +401,7 @@ var Select = _react2['default'].createClass({
 	getDefaultProps: function getDefaultProps() {
 		return {
 			addLabelText: 'Add "{label}"?',
+			autosize: true,
 			allowCreate: false,
 			backspaceRemoves: true,
 			clearable: true,
@@ -409,6 +415,7 @@ var Select = _react2['default'].createClass({
 			ignoreCase: true,
 			inputProps: {},
 			isLoading: false,
+			joinValues: false,
 			labelKey: 'label',
 			matchPos: 'any',
 			matchProp: 'any',
@@ -441,6 +448,14 @@ var Select = _react2['default'].createClass({
 	componentDidMount: function componentDidMount() {
 		if (this.props.autofocus) {
 			this.focus();
+		}
+	},
+
+	componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+		if (this.props.value !== nextProps.value && nextProps.required) {
+			this.setState({
+				required: this.handleRequired(nextProps.value, nextProps.multi)
+			});
 		}
 	},
 
@@ -739,7 +754,7 @@ var Select = _react2['default'].createClass({
 		}
 	},
 
-	setValue: function setValue(value) {
+	setValue: function setValue(value, event) {
 		var _this = this;
 
 		if (this.props.autoBlur) {
@@ -755,10 +770,11 @@ var Select = _react2['default'].createClass({
 				return i[_this.props.valueKey];
 			}).join(this.props.delimiter) : value[this.props.valueKey];
 		}
-		this.props.onChange(value);
+
+		return this.props.onChange(value, event);
 	},
 
-	selectValue: function selectValue(value) {
+	selectValue: function selectValue(value, event) {
 		this.hasScrolledToOption = false;
 		if (this.props.multi) {
 			this.addValue(value);
@@ -766,12 +782,13 @@ var Select = _react2['default'].createClass({
 				inputValue: ''
 			});
 		} else {
-			this.setValue(value);
-			this.setState({
-				isOpen: false,
-				inputValue: '',
-				isPseudoFocused: this.state.isFocused
-			});
+			if (this.setValue(value, event)) {
+				this.setState({
+					isOpen: false,
+					inputValue: '',
+					isPseudoFocused: this.state.isFocused
+				});
+			}
 		}
 	},
 
@@ -930,17 +947,32 @@ var Select = _react2['default'].createClass({
 				ref: 'input',
 				style: { border: 0, width: 1, display: 'inline-block' } }));
 		}
-		return _react2['default'].createElement(_reactInputAutosize2['default'], _extends({}, this.props.inputProps, {
-			className: className,
-			tabIndex: this.props.tabIndex,
-			onBlur: this.handleInputBlur,
-			onChange: this.handleInputChange,
-			onFocus: this.handleInputFocus,
-			minWidth: '5',
-			ref: 'input',
-			required: this.state.required,
-			value: this.state.inputValue
-		}));
+		if (this.props.autosize) {
+			return _react2['default'].createElement(_reactInputAutosize2['default'], _extends({}, this.props.inputProps, {
+				className: className,
+				tabIndex: this.props.tabIndex,
+				onBlur: this.handleInputBlur,
+				onChange: this.handleInputChange,
+				onFocus: this.handleInputFocus,
+				minWidth: '5',
+				ref: 'input',
+				required: this.state.required,
+				value: this.state.inputValue
+			}));
+		}
+		return _react2['default'].createElement(
+			'div',
+			{ className: className },
+			_react2['default'].createElement('input', _extends({}, this.props.inputProps, {
+				tabIndex: this.props.tabIndex,
+				onBlur: this.handleInputBlur,
+				onChange: this.handleInputChange,
+				onFocus: this.handleInputFocus,
+				ref: 'input',
+				required: this.state.required,
+				value: this.state.inputValue
+			}))
+		);
 	},
 
 	renderClear: function renderClear() {
@@ -1058,6 +1090,17 @@ var Select = _react2['default'].createClass({
 		var _this5 = this;
 
 		if (!this.props.name) return;
+		if (this.props.joinValues) {
+			var value = valueArray.map(function (i) {
+				return stringifyValue(i[_this5.props.valueKey]);
+			}).join(this.props.delimiter);
+			return _react2['default'].createElement('input', {
+				type: 'hidden',
+				ref: 'value',
+				name: this.props.name,
+				value: value,
+				disabled: this.props.disabled });
+		}
 		return valueArray.map(function (item, index) {
 			return _react2['default'].createElement('input', { key: 'hidden.' + index,
 				type: 'hidden',
