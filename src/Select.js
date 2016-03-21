@@ -1,5 +1,6 @@
-// Adds event as second param to selectValue(), setValue(), and by extension, onChange()
-// onChange() can return false to not hide the menu
+// - Adds event as second param to selectValue(), setValue(), and by extension, onChange()
+// - onChange() can return false to not hide the menu
+// - renderClear() will still render if enabled and a value is not present
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -646,7 +647,7 @@ const Select = React.createClass({
 	},
 
 	renderClear () {
-		if (!this.props.clearable || !this.props.value || (this.props.multi && !this.props.value.length) || this.props.disabled || this.props.isLoading) return;
+		if (!this.props.clearable || (this.props.multi && !this.props.value.length) || this.props.disabled || this.props.isLoading) return;
 		return (
 			<span className="Select-clear-zone" title={this.props.multi ? this.props.clearAllText : this.props.clearValueText}
 						aria-label={this.props.multi ? this.props.clearAllText : this.props.clearValueText}

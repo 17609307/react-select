@@ -393,8 +393,9 @@ module.exports = function stripDiacritics(str) {
 };
 
 },{}],"react-select":[function(require,module,exports){
-// Adds event as second param to selectValue(), setValue(), and by extension, onChange()
-// onChange() can return false to not hide the menu
+// - Adds event as second param to selectValue(), setValue(), and by extension, onChange()
+// - onChange() can return false to not hide the menu
+// - renderClear() will still render if enabled and a value is not present
 
 'use strict';
 
@@ -1089,7 +1090,7 @@ var Select = _react2['default'].createClass({
 	},
 
 	renderClear: function renderClear() {
-		if (!this.props.clearable || !this.props.value || this.props.multi && !this.props.value.length || this.props.disabled || this.props.isLoading) return;
+		if (!this.props.clearable || this.props.multi && !this.props.value.length || this.props.disabled || this.props.isLoading) return;
 		return _react2['default'].createElement(
 			'span',
 			{ className: 'Select-clear-zone', title: this.props.multi ? this.props.clearAllText : this.props.clearValueText,
