@@ -282,7 +282,8 @@ module.exports = Option;
 (function (global){
 // - Adds event as second param to selectValue(), setValue(), and by extension, onChange()
 // - onChange() can return false to not hide the menu
-// - renderClear() will still render if enabled and a value is not present
+// - renderClear() will still render if enabled and an input value is not present
+// - Add disableMenuBlur prop to prevent the menu from dissappearing on blur
 
 'use strict';
 
@@ -353,6 +354,7 @@ var Select = _react2['default'].createClass({
 		clearable: _react2['default'].PropTypes.bool, // should it be possible to reset value
 		delimiter: _react2['default'].PropTypes.string, // delimiter to use to join multiple values for the hidden field value
 		disabled: _react2['default'].PropTypes.bool, // whether the Select is disabled or not
+		disableMenuBlur: _react2['default'].PropTypes.bool, // Custom: Show the menu still on input blur if true
 		escapeClearsValue: _react2['default'].PropTypes.bool, // whether escape clears the value when the menu is closed
 		filterOption: _react2['default'].PropTypes.func, // method to filter a single option (option, filterString)
 		filterOptions: _react2['default'].PropTypes.any, // boolean to enable default filtering or function to filter the options array ([options], filterString, [values])
@@ -410,6 +412,7 @@ var Select = _react2['default'].createClass({
 			clearValueText: 'Clear value',
 			delimiter: ',',
 			disabled: false,
+			disableMenuBlur: false,
 			escapeClearsValue: true,
 			filterOptions: true,
 			ignoreAccents: true,
@@ -624,6 +627,8 @@ var Select = _react2['default'].createClass({
 	},
 
 	handleInputBlur: function handleInputBlur(event) {
+		var onBlurredState = {};
+
 		if (this.refs.menu && document.activeElement.isEqualNode(this.refs.menu)) {
 			return;
 		}
@@ -631,14 +636,19 @@ var Select = _react2['default'].createClass({
 		if (this.props.onBlur) {
 			this.props.onBlur(event);
 		}
-		var onBlurredState = {
-			isFocused: false,
-			isOpen: false,
-			isPseudoFocused: false
-		};
+
+		if (!this.props.disableMenuBlur) {
+			onBlurredState = {
+				isFocused: false,
+				isOpen: false,
+				isPseudoFocused: false
+			};
+		}
+
 		if (this.props.onBlurResetsInput) {
 			onBlurredState.inputValue = '';
 		}
+
 		this.setState(onBlurredState);
 	},
 
