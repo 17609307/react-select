@@ -756,6 +756,12 @@ var Select = _react2['default'].createClass({
 				isOpen: false,
 				isPseudoFocused: false
 			};
+		} else {
+			onBlurredState = {
+				isFocused: false,
+				isOpen: true,
+				isPseudoFocused: false
+			};
 		}
 
 		if (this.props.onBlurResetsInput) {

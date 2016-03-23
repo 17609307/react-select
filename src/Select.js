@@ -318,7 +318,7 @@ const Select = React.createClass({
 
 	handleInputBlur (event) {
 		var onBlurredState = {};
-		
+
  		if (this.refs.menu && document.activeElement.isEqualNode(this.refs.menu)) {
  			return;
  		}
@@ -332,6 +332,12 @@ const Select = React.createClass({
 				isFocused: false,
 				isOpen: false,
 				isPseudoFocused: false,
+			};
+		} else {
+			onBlurredState = {
+				isFocused: false,
+				isOpen: true,
+				isPseudoFocused: false
 			};
 		}
 
