@@ -2,6 +2,7 @@
 // - onChange() can return false to not hide the menu
 // - renderClear() will still render if enabled and an input value is not present
 // - Add disableMenuBlur prop to prevent the menu from dissappearing on blur
+// - Add openOnLoad prop to open the menu once the component has loaded
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -72,6 +73,7 @@ const Select = React.createClass({
 		onMenuScrollToBottom: React.PropTypes.func, // fires when the menu is scrolled to the bottom; can be used to paginate options
 		onOpen: React.PropTypes.func,               // fires when the menu is opened
 		onValueClick: React.PropTypes.func,         // onClick handler for value labels: function (value, event) {}
+		openOnLoad: React.PropTypes.bool,           // opens menu after component load
 		optionComponent: React.PropTypes.func,      // option component to render in dropdown
 		optionRenderer: React.PropTypes.func,       // optionRenderer: function (option) {}
 		options: React.PropTypes.array,             // array of options
@@ -142,6 +144,12 @@ const Select = React.createClass({
 	componentDidMount () {
 		if (this.props.autofocus) {
 			this.focus();
+		}
+
+		if (this.props.openOnLoad) {
+			this.setState({
+				isOpen: true
+			});
 		}
 	},
 
